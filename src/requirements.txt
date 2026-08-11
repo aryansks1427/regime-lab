@@ -1,0 +1,6 @@
+pandas
+numpy
+hmmlearn
+pymc
+scikit-learn
+yfinance
