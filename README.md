@@ -1,17 +1,28 @@
-# Regime Lab: Quantitative Market Regime Detection Engine
+# Regime-Lab: Quantitative Market Regime Detection & Backtesting Engine
 
-A quantitative framework using Hidden Markov Models (HMM) to classify financial market regimes (Bull, Neutral, Bear) and execute dynamic asset allocation strategies.
+An end-to-end quantitative trading framework that classifies financial market regimes using temporal CNN embeddings and Bayesian Neural Networks (BNN) with Monte Carlo Dropout, executing dynamic risk-managed asset allocation strategies.
 
 ## Key Features
-- **Point-In-Time (PIT) Alignment:** Prevents look-ahead bias in macroeconomic feature processing.
-- **Unsupervised Regime Identification:** Uses `hmmlearn` to fit Gaussian Hidden Markov Models.
-- **Automated State Ordering & Smoothing:** Maps states strictly by mean return expectation and applies rolling probability smoothing to minimize whipsaw trading.
-- **Backtesting & Analytics Engine:** Computes risk-adjusted performance including Sharpe Ratio, Max Drawdown, and CAGR.
-- **Interactive Monitoring Dashboard:** Built with Streamlit and Plotly for real-time scenario modeling.
+- **Point-In-Time Data Engine**: Multi-calendar alignment eliminating lookahead bias across global equity and volatility markets.
+- **1D-CNN Temporal Sequence Extractor**: Learns 64-dimensional latent temporal embeddings across sliding lookback windows.
+- **Hybrid Bayesian Classifier**: Combines raw point-in-time features with temporal embeddings to output regime probabilities and separate epistemic vs. aleatoric uncertainty.
+- **Dynamic Backtest Engine**: Backtests market regimes against benchmark indices with configurable transaction costs (bps), computing Sharpe ratio, maximum drawdown, and volatility.
+- **Interactive Streamlit Dashboard**: Real-time visualization of latent regime probabilities, uncertainty metrics, and dynamic allocation performance.
 
-## Installation & Execution
-
-1. Clone the repository:
-   ```bash
-   git clone [https://github.com/aryansks1427/regime-lab.git](https://github.com/aryansks1427/regime-lab.git)
-   cd regime-lab
+## Project Structure
+```text
+regime-lab/
+├── src/
+│   ├── app.py                   # Streamlit quantitative dashboard
+│   ├── backtest_engine.py       # Dynamic allocation & backtesting engine
+│   ├── bnn_classifier.py        # Bayesian Neural Network implementation
+│   ├── data_ingestion.py        # Real-time data loader (yfinance)
+│   ├── data_pipeline.py         # Point-in-time synchronization pipeline
+│   ├── embedding_extractor.py   # 1D-CNN sliding window encoder
+│   ├── hybrid_pipeline.py       # Combined embedding + raw classifier
+│   └── regime_models.py         # Baseline GMM / HMM models
+├── tests/
+│   └── test_pipeline.py         # PyTest automated unit test suite
+├── main.py                      # CLI entry point
+├── requirements.txt             # Environment dependencies
+└── README.md                    # Project documentation
