@@ -54,34 +54,27 @@ with st.spinner("Downloading market data and running regime estimation..."):
 
     prediction_sets = [list(range(n_states))] * len(returns_df)
 
-    backtester = RegimeBacktester(initial_capital=initial_cap)
+ backtester = RegimeBacktester(initial_capital=initial_cap)
 
-   # Execute backtest with matching dimensions
-    results = backtester.run_backtest(
-        returns_df=returns_df,
-        regime_probs_df=regime_probs_df,
-        prediction_sets=prediction_sets
-    )
+# Execute backtest with matching dimensions
+results = backtester.run_backtest(
+    returns_df=returns_df,
+    regime_probs_df=regime_probs_df,
+    prediction_sets=prediction_sets
+)
 
-    final_df = results['portfolio'] if isinstance(results, dict) and 'portfolio' in results else results
-    metrics = backtester.calculate_metrics(final_df)
-    # Execute backtest with the 3 required positional arguments
-    results = backtester.run_backtest(
-        returns_df=returns_df,
-        regime_probs_df=regime_probs_df,
-        prediction_sets=prediction_sets
-    )
+# Extract performance dataframe
+perf_df = results["performance"]
 
-    final_df = results['portfolio'] if isinstance(results, dict) and 'portfolio' in results else results
-    metrics = backtester.calculate_metrics(final_df)
+# Compute metrics using backtest_engine's exact static method
+metrics = RegimeBacktester.calculate_performance_metrics(perf_df)
 
 # --- Top Key Performance Metrics ---
 c1, c2, c3, c4 = st.columns(4)
-c1.metric("Strategy Value", f"${final_df['equity_curve'].iloc[-1]:,.2f}")
-c2.metric("Benchmark Value", f"${final_df['benchmark_curve'].iloc[-1]:,.2f}")
-c3.metric("Strategy Sharpe Ratio", metrics["Strategy Sharpe"])
-c4.metric("Strategy Max Drawdown", metrics["Strategy Max Drawdown"])
-
+c1.metric("Final Portfolio Value", f"${perf_df['portfolio_value'].iloc[-1]:,.2f}")
+c2.metric("Annualized Return", f"{metrics['Annualized Return']*100:.2f}%")
+c3.metric("Sharpe Ratio", f"{metrics['Sharpe Ratio']:.2f}")
+c4.metric("Max Drawdown", f"{metrics['Max Drawdown']*100:.2f}%")   
 # --- Interactive Charts ---
 fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.08, subplot_titles=("Portfolio Performance vs Benchmark", "Detected Market Regimes"))
 
