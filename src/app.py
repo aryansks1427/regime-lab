@@ -13,7 +13,7 @@ from plotly.subplots import make_subplots
 
 from src.pit_data_engine import fetch_market_data
 from src.regime_models import GaussianHMMRegimeDetector
-from src.backtest_engine import RegimeBacktester
+from src.backtest_engine import RegimeAwareBacktestEngine as RegimeBacktester
 
 st.set_page_config(page_title="Regime Lab | Dynamic Market Allocation", layout="wide")
 
