@@ -124,3 +124,16 @@ metrics_df = pd.DataFrame({
     ]
 })
 st.table(metrics_df)
+# Compute benchmark equity curve
+benchmark_equity = initial_cap * (1 + returns_df).cumprod()
+
+# Add Benchmark trace to Subplot 1
+fig.add_trace(
+    go.Scatter(
+        x=benchmark_equity.index, 
+        y=benchmark_equity.iloc[:, 0], 
+        name="Buy & Hold Benchmark", 
+        line=dict(color='#636EFA', width=1.5, dash='dash')
+    ), 
+    row=1, col=1
+)
