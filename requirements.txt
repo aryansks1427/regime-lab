@@ -1,6 +1,8 @@
+streamlit
 pandas
 numpy
-hmmlearn
-pymc
-scikit-learn
 yfinance
+scikit-learn
+hmmlearn
+torch
+plotly
