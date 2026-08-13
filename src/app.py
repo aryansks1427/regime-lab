@@ -47,14 +47,15 @@ with st.spinner("Downloading market data and running regime estimation..."):
         first_num_col = df.select_dtypes(include=[np.number]).columns[0]
         returns_df = df[[first_num_col]].pct_change().dropna()
 
-    # Align regime probabilities to matching index
-    aligned_regime_df = regime_df.loc[returns_df.index]
-    prob_cols = [col for col in aligned_regime_df.columns if 'prob' in str(col).lower() or isinstance(col, int)]
-    regime_probs_df = aligned_regime_df[prob_cols] if prob_cols else aligned_regime_df
+   # Align regime probabilities to matching index
+aligned_regime_df = regime_df.loc[returns_df.index]
+prob_cols = [col for col in aligned_regime_df.columns if 'prob' in str(col).lower() or isinstance(col, int)]
+regime_probs_df = aligned_regime_df[prob_cols] if prob_cols else aligned_regime_df
 
-    prediction_sets = [list(range(n_states))] * len(returns_df)
+prediction_sets = [list(range(n_states))] * len(returns_df)
 
- backtester = RegimeBacktester(initial_capital=initial_cap)
+# Initialize backtester (unindented at module level)
+backtester = RegimeBacktester(initial_capital=initial_cap)
 
 # Execute backtest with matching dimensions
 results = backtester.run_backtest(
