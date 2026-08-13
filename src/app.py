@@ -35,14 +35,36 @@ with st.spinner("Downloading market data and running regime estimation..."):
     detector = GaussianHMMRegimeDetector(n_components=n_states)
     regime_df = detector.fit_predict(df, smooth_window=smooth_win)
 
-    # Extract required inputs for RegimeAwareBacktestEngine
-    returns_df = regime_df[['Return']] if 'Return' in regime_df.columns else regime_df[['Close']].pct_change().dropna()
-    prob_cols = [col for col in regime_df.columns if 'prob' in str(col).lower() or isinstance(col, int)]
-    regime_probs_df = regime_df[prob_cols] if prob_cols else regime_df
+    # Robustly find or calculate returns dataframe
+    if 'Return' in regime_df.columns:
+        returns_df = regime_df[['Return']]
+    elif 'Close' in regime_df.columns:
+        returns_df = regime_df[['Close']].pct_change().dropna()
+    elif 'Close' in df.columns:
+        returns_df = df[['Close']].pct_change().dropna()
+    else:
+        # Fallback to the first numeric column
+        first_num_col = df.select_dtypes(include=[np.number]).columns[0]
+        returns_df = df[[first_num_col]].pct_change().dropna()
+
+    # Align regime probabilities to matching index
+    aligned_regime_df = regime_df.loc[returns_df.index]
+    prob_cols = [col for col in aligned_regime_df.columns if 'prob' in str(col).lower() or isinstance(col, int)]
+    regime_probs_df = aligned_regime_df[prob_cols] if prob_cols else aligned_regime_df
+
     prediction_sets = [list(range(n_states))] * len(returns_df)
 
     backtester = RegimeBacktester(initial_capital=initial_cap)
 
+    # Execute backtest with matching dimensions
+    results = backtester.run_backtest(
+        returns_df=returns_df,
+        regime_probs_df=regime_probs_df,
+        prediction_sets=prediction_sets
+    )
+
+    final_df = results['portfolio'] if isinstance(results, dict) and 'portfolio' in results else results
+    metrics = backtester.calculate_metrics(final_df)
     # Execute backtest with the 3 required positional arguments
     results = backtester.run_backtest(
         returns_df=returns_df,
