@@ -82,10 +82,10 @@ fig = make_subplots(
     rows=2, cols=1, 
     shared_xaxes=True, 
     vertical_spacing=0.08, 
-    subplot_titles=("Portfolio Performance", "Detected Market Regimes")
+    subplot_titles=("Portfolio Performance vs Benchmark", "Detected Market Regimes")
 )
 
-# Portfolio Equity Curve
+# 1. Regime Strategy Equity Curve
 fig.add_trace(
     go.Scatter(
         x=perf_df.index, 
@@ -96,7 +96,19 @@ fig.add_trace(
     row=1, col=1
 )
 
-# Regime State Line
+# 2. Buy & Hold Benchmark Equity Curve
+benchmark_equity = initial_cap * (1 + returns_df).cumprod()
+fig.add_trace(
+    go.Scatter(
+        x=benchmark_equity.index, 
+        y=benchmark_equity.iloc[:, 0], 
+        name="Buy & Hold Benchmark", 
+        line=dict(color='#636EFA', width=1.5, dash='dash')
+    ), 
+    row=1, col=1
+)
+
+# 3. Regime State Line
 regime_states = regime_probs_df.values.argmax(axis=1) if hasattr(regime_probs_df, 'values') else 0
 fig.add_trace(
     go.Scatter(
@@ -108,6 +120,7 @@ fig.add_trace(
     row=2, col=1
 )
 
+# Render Chart
 fig.update_layout(height=650, template="plotly_dark", margin=dict(l=40, r=40, t=60, b=40))
 st.plotly_chart(fig, use_container_width=True)
 
@@ -124,16 +137,3 @@ metrics_df = pd.DataFrame({
     ]
 })
 st.table(metrics_df)
-# Compute benchmark equity curve
-benchmark_equity = initial_cap * (1 + returns_df).cumprod()
-
-# Add Benchmark trace to Subplot 1
-fig.add_trace(
-    go.Scatter(
-        x=benchmark_equity.index, 
-        y=benchmark_equity.iloc[:, 0], 
-        name="Buy & Hold Benchmark", 
-        line=dict(color='#636EFA', width=1.5, dash='dash')
-    ), 
-    row=1, col=1
-)
