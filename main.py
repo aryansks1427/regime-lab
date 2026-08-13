@@ -1,5 +1,9 @@
-import pandas as pd
-import numpy as np
+import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Now your existing imports will work correctly:
 from src.pit_data_engine import preprocess_nifty_features
 from src.regime_models import GaussianHMMRegimeDetector
 from src.backtest_engine import RegimeBacktester
