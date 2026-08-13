@@ -56,7 +56,7 @@ with st.spinner("Downloading market data and running regime estimation..."):
 
     backtester = RegimeBacktester(initial_capital=initial_cap)
 
-    # Execute backtest with matching dimensions
+   # Execute backtest with matching dimensions
     results = backtester.run_backtest(
         returns_df=returns_df,
         regime_probs_df=regime_probs_df,
