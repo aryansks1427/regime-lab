@@ -31,14 +31,26 @@ initial_cap = st.sidebar.number_input("Initial Capital ($)", value=100000)
 # --- Fetch Data & Run Model ---
 with st.spinner("Downloading market data and running regime estimation..."):
     df = fetch_market_data(ticker=ticker_symbol, start_date="2018-01-01", end_date="2024-01-01")
-    
+
     detector = GaussianHMMRegimeDetector(n_components=n_states)
     regime_df = detector.fit_predict(df, smooth_window=smooth_win)
-    
-    # Weight map: State 0 (Bull) -> 100%, State 1 -> 50%, State 2 -> 0%
-    weight_map = {0: 1.0, 1: 0.5, 2: 0.0, 3: 0.0}
+
+    # Extract required inputs for RegimeAwareBacktestEngine
+    returns_df = regime_df[['Return']] if 'Return' in regime_df.columns else regime_df[['Close']].pct_change().dropna()
+    prob_cols = [col for col in regime_df.columns if 'prob' in str(col).lower() or isinstance(col, int)]
+    regime_probs_df = regime_df[prob_cols] if prob_cols else regime_df
+    prediction_sets = [list(range(n_states))] * len(returns_df)
+
     backtester = RegimeBacktester(initial_capital=initial_cap)
-    final_df = backtester.run_backtest(regime_df, weight_map)
+
+    # Execute backtest with the 3 required positional arguments
+    results = backtester.run_backtest(
+        returns_df=returns_df,
+        regime_probs_df=regime_probs_df,
+        prediction_sets=prediction_sets
+    )
+
+    final_df = results['portfolio'] if isinstance(results, dict) and 'portfolio' in results else results
     metrics = backtester.calculate_metrics(final_df)
 
 # --- Top Key Performance Metrics ---
