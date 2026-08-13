@@ -74,24 +74,52 @@ c1, c2, c3, c4 = st.columns(4)
 c1.metric("Final Portfolio Value", f"${perf_df['portfolio_value'].iloc[-1]:,.2f}")
 c2.metric("Annualized Return", f"{metrics['Annualized Return']*100:.2f}%")
 c3.metric("Sharpe Ratio", f"{metrics['Sharpe Ratio']:.2f}")
-c4.metric("Max Drawdown", f"{metrics['Max Drawdown']*100:.2f}%")   
+c4.metric("Max Drawdown", f"{metrics['Max Drawdown']*100:.2f}%")
+
 # --- Interactive Charts ---
-fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.08, subplot_titles=("Portfolio Performance vs Benchmark", "Detected Market Regimes"))
+fig = make_subplots(
+    rows=2, cols=1, 
+    shared_xaxes=True, 
+    vertical_spacing=0.08, 
+    subplot_titles=("Portfolio Performance", "Detected Market Regimes")
+)
 
-fig.add_trace(go.Scatter(x=final_df.index, y=final_df['equity_curve'], name="Regime Strategy", line=dict(color='#00CC96', width=2)), row=1, col=1)
-fig.add_trace(go.Scatter(x=final_df.index, y=final_df['benchmark_curve'], name="Buy & Hold Benchmark", line=dict(color='#636EFA', width=1.5, dash='dash')), row=1, col=1)
+# Portfolio Equity Curve
+fig.add_trace(
+    go.Scatter(
+        x=perf_df.index, 
+        y=perf_df['portfolio_value'], 
+        name="Regime Strategy", 
+        line=dict(color='#00CC96', width=2)
+    ), 
+    row=1, col=1
+)
 
-# Heatmap regime line
-fig.add_trace(go.Scatter(x=final_df.index, y=final_df['regime_state'], name="Regime State (0=Bull, 2=Bear)", line=dict(color='#EF553B', width=1.5)), row=2, col=1)
+# Regime State Line
+regime_states = regime_probs_df.values.argmax(axis=1) if hasattr(regime_probs_df, 'values') else 0
+fig.add_trace(
+    go.Scatter(
+        x=perf_df.index, 
+        y=regime_states, 
+        name="Regime State", 
+        line=dict(color='#EF553B', width=1.5)
+    ), 
+    row=2, col=1
+)
 
 fig.update_layout(height=650, template="plotly_dark", margin=dict(l=40, r=40, t=60, b=40))
 st.plotly_chart(fig, use_container_width=True)
 
 # --- Detailed Risk Metrics Table ---
-st.subheader("📊 Performance & Risk Metrics Comparison")
+st.subheader("📊 Performance & Risk Metrics")
 metrics_df = pd.DataFrame({
-    "Metric": ["CAGR", "Annualized Volatility", "Sharpe Ratio", "Max Drawdown"],
-    "Regime Strategy": [metrics["Strategy CAGR"], metrics["Strategy Volatility"], metrics["Strategy Sharpe"], metrics["Strategy Max Drawdown"]],
-    "Benchmark (Buy & Hold)": [metrics["Benchmark CAGR"], metrics["Benchmark Volatility"], metrics["Benchmark Sharpe"], metrics["Benchmark Max Drawdown"]]
+    "Metric": ["Annualized Return", "Annualized Volatility", "Sharpe Ratio", "Sortino Ratio", "Max Drawdown"],
+    "Value": [
+        f"{metrics['Annualized Return']*100:.2f}%",
+        f"{metrics['Annualized Volatility']*100:.2f}%",
+        f"{metrics['Sharpe Ratio']:.2f}",
+        f"{metrics['Sortino Ratio']:.2f}",
+        f"{metrics['Max Drawdown']*100:.2f}%"
+    ]
 })
 st.table(metrics_df)
